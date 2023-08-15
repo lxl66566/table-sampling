@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background-color: #fff;
+      color: #333;
+    }
+    .dark-mode {
+      background-color: #333;
+      color: #fff;
+    }
+    #main {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      margin: auto;
+      text-align: center;
+    }
+    #buttons button {
+      text-align: center;
+      display: inline-block;
+    }
+  </style>
+  <head>
+    <title>wordsreciter-4oyh</title>
+  </head>
+  <body>
+    <div id="main">
+      <button onclick="toggleDarkMode()">切换深色模式</button>
+      <input type="file" id="upload" />
+    </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    function toggleDarkMode() {
+      var body = document.body;
+      body.classList.toggle("dark-mode");
+    }
+    function detectSystemAppearance() {
+      if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+        document.body.classList.add("dark-mode");
+      }
+    }
+    function readBlob(blob) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          resolve(e.target.result);
+        };
+        reader.readAsText(blob);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", detectSystemAppearance);
+    upload.addEventListener(
+      "change",
+      (e) => {
+        const files = e.target.files;
+        readBlob(files[0]).then((content) => {
+          document.getElementById("main").remove();
+          const markd = marked.parse(content);
+          const temp = document.createElement("div");
+          temp.innerHTML = markd;
+          const r = temp.querySelector("table");
+          r.setAttribute("id", "table");
+          r.setAttribute("border", "1");
+          const rlist = r.querySelectorAll("tr");
+          for (let i = 1; i < rlist.length; i++) {
+            rlist[i].remove();
+          }
+          let index = Math.floor(Math.random() * (rlist.length - 1) + 1);
+          const next = () => {
+            rlist[index].remove();
+            index = Math.floor(Math.random() * (rlist.length - 1) + 1);
+            const randomtr = rlist[index];
+            r.appendChild(randomtr);
+          };
+          document.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" || e.key == " ") {
+              next();
+            }
+          });
+          next();
+          let button = document.createElement("button");
+          button.textContent = "next";
+          button.onclick = next;
+
+          const line = () => {
+            r.getAttribute("border") ? r.removeAttribute("border") : r.setAttribute("border", "1");
+          };
+          let button2 = document.createElement("button");
+          button2.textContent = "line";
+          button2.onclick = line;
+
+          const buttons = document.createElement("div");
+          buttons.setAttribute("id", "buttons");
+          buttons.appendChild(button);
+          buttons.appendChild(button2);
+
+          const main = document.createElement("div");
+          main.setAttribute("id", "main");
+          main.appendChild(buttons);
+          main.appendChild(r);
+
+          document.body.appendChild(main);
+        });
+      },
+      false,
+    );
+  </script>
+</html>
